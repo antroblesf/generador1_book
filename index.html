@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Escritura de Libros</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-body: 'Lato', sans-serif;
+            --font-heading: 'Lora', serif;
+            --panel-bg: #FFFFFF;
+            --border-color: #DEE2E6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --accent-color: #007BFF;
+            --accent-hover: #0056b3;
+            --success-color: #28a745;
+            --danger-color: #DC3545;
+        }
+        * { box-sizing: border-box; }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        body {
+            font-family: var(--font-body);
+            margin: 0;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-primary);
+            background: linear-gradient(-45deg, #2c3e50, #004e63, #1f6a6e, #3498db);
+            background-size: 400% 400%;
+            animation: gradientAnimation 18s ease infinite;
+        }
+        .app-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1600px;
+            height: auto;
+        }
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 85vh;
+        }
+        .form-panel, .tab-content { flex-grow: 1; overflow-y: auto; }
+        .form-panel { padding: 2.5rem; }
+        .header h1 { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 600; }
+        .header p { font-size: 0.95rem; color: var(--text-secondary); margin: 0.5rem 0 2rem 0; }
+        
+        .form-section { margin-bottom: 2.5rem; }
+        .form-section h3 { font-family: var(--font-heading); font-size: 1rem; font-weight: 600; color: var(--text-secondary); padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); margin: 0 0 1.5rem 0; }
+        .input-group { position: relative; margin-bottom: 1.25rem; }
+        .input-group svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--text-secondary); transition: color 0.2s; }
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%; padding: 1rem 1rem 1rem 3rem; border: 1px solid #ced4da;
+            border-radius: 0.5rem; font-size: 0.95rem; background-color: #fff;
+            transition: border-color 0.2s;
+        }
+        .input-group textarea { min-height: 120px; line-height: 1.5; }
+        .input-group label {
+            position: absolute; left: 3rem; top: 50%; transform: translateY(-50%);
+            color: var(--text-secondary); background-color: #fff; padding: 0 0.25rem;
+            margin: 0; font-size: 0.95rem; font-weight: 400;
+            transition: all 0.2s ease-out; pointer-events: none;
+        }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus { outline: none; border-color: var(--accent-color); }
+        .input-group input:focus + label, .input-group input:not(:placeholder-shown) + label,
+        .input-group textarea:focus + label, .input-group textarea:not(:placeholder-shown) + label,
+        .input-group select:focus + label, .input-group select:valid + label { top: 0; font-size: 0.75rem; color: var(--accent-color); font-weight: 700; }
+        .input-group input:focus ~ svg, .input-group textarea:focus ~ svg, .input-group select:focus ~ svg { color: var(--accent-color); }
+        .form-row { display: flex; gap: 1rem; }
+        .form-row .input-group { flex: 1; }
+        .button { padding: 0.8rem 1.2rem; border: none; border-radius: 0.5rem; color: white; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; text-decoration: none; }
+        .button.primary { background: linear-gradient(45deg, var(--accent-color), var(--accent-hover)); }
+        .button.primary:hover:not(:disabled) { box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3); transform: translateY(-2px); }
+        .button.secondary { background: var(--text-secondary); }
+        .button.success { background: var(--success-color); }
+        .button:disabled { background: #6C757D; opacity: 0.65; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .tabs { display: flex; padding: 0 2rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0; background-color: #f8f9fa; }
+        .tab { padding: 0.8rem 1.2rem; font-size: 0.95rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+        .tab.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: flex; flex-direction: column; }
+        .editor-container { padding: 2.5rem 3.5rem; font-family: var(--font-body); font-size: 11pt; line-height: 1.9; color: #343A40; }
+        .editor-container:focus { outline: none; }
+        .editor-container:empty:before { content: "El contenido de tu libro aparecerá aquí..."; color: #adb5bd; font-style: italic; }
+        .editor-container h1, .editor-container h2, .editor-container h3, .editor-container h4 { font-family: var(--font-heading); margin: 2em 0 1em 0; font-weight: 600; }
+        .editor-container h1 { font-size: 2.5em; text-align: center; }
+        .editor-container h2 { font-size: 2em; border-bottom: 2px solid #E9ECEF; padding-bottom: 0.5rem; }
+        .editor-container h3 { font-size: 1.6em; color: var(--accent-color); }
+        .editor-container h4 { font-size: 1.3em; }
+        .editor-container p, .editor-container li { text-align: justify; }
+        .status-bar { border-top: 1px solid var(--border-color); padding: 0.8rem 2rem; font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; flex-shrink: 0; background-color: #f8f9fa; }
+        .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.1); border-left-color: var(--accent-color); border-radius: 50%; display: inline-block; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .generation-controls { display: flex; flex-wrap: wrap; gap: 1rem; padding: 1.5rem 2rem; align-items: center; border-bottom: 1px solid var(--border-color); flex-shrink: 0; background-color: #f8f9fa; }
+        .generation-controls select { flex-grow: 1; }
+        
+        /* ===== CORRECCIÓN DE ESTILO PARA LAS OPCIONES DEL SELECTOR ===== */
+        .generation-controls select option {
+            background: #fff;
+            color: #212529;
+        }
+
+        @media (min-width: 1024px) {
+            body { padding: 2rem; }
+            .app-layout { grid-template-columns: 450px 1fr; height: 92vh; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="panel form-panel">
+            <div class="header"><h1>Asistente de Libros</h1><p>Define la estructura y el tono de tu obra, y deja que la IA se encargue de la escritura inicial.</p></div>
+            <form id="book-form" onsubmit="event.preventDefault(); generarIndice();">
+                <div class="form-section">
+                    <h3>Información Esencial</h3>
+                    <div class="input-group">
+                        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg></span>
+                        <input type="text" id="titulo" required placeholder=" ">
+                        <label for="titulo">Título del Libro</label>
+                    </div>
+                    <div class="input-group">
+                        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg></span>
+                        <textarea id="argumento" rows="4" required placeholder=" "></textarea>
+                        <label for="argumento">Argumento o Descripción Principal</label>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>Estructura del Libro</h3>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg></span>
+                            <input type="number" id="numCapitulos" value="10" min="1" max="50" required placeholder=" ">
+                            <label for="numCapitulos">Nº de Capítulos</label>
+                        </div>
+                        <div class="input-group">
+                             <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg></span>
+                            <input type="number" id="numSecciones" value="6" min="1" max="15" required placeholder=" ">
+                            <label for="numSecciones">Secciones/Capítulo</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>Tono y Detalle</h3>
+                    <div class="input-group">
+                        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.43 2.43a4.5 4.5 0 00-.976 8.217A4.5 4.5 0 006.568 21H11.5a4.5 4.5 0 002.242-8.618c1.026-.23 1.553-.341 2.094-.645a4.5 4.5 0 002.29-2.29c.304-.54.415-1.068.645-2.094A4.5 4.5 0 0018 6.568a4.5 4.5 0 00-8.217-.976 2.25 2.25 0 01-2.43-2.43a3 3 0 00-1.128-5.78z" /></svg></span>
+                        <select id="tono" required>
+                            <option value="" disabled selected hidden></option>
+                            <option value="Narrativo y Creativo">Narrativo y Creativo</option><option value="Infantil y Sencillo">Infantil y Sencillo</option>
+                            <option value="Juvenil y Dinámico">Juvenil y Dinámico</option><option value="Académico (Licenciatura)">Académico (Licenciatura)</option>
+                            <option value="Académico (Posgrado)">Académico (Posgrado)</option><option value="Técnico y Preciso (Instituto)">Técnico y Preciso (Instituto)</option>
+                            <option value="Profesional y Corporativo">Profesional y Corporativo</option><option value="Divulgativo y Accesible">Divulgativo y Accesible</option><option value="Experto y Profundo">Experto y Profundo</option>
+                        </select>
+                         <label for="tono">Tono de Escritura</label>
+                    </div>
+                    <div class="input-group">
+                        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5v-1.5M10.5 5.625v1.5m0 0a1.125 1.125 0 011.125 1.125m-1.125-1.125a1.125 1.125 0 00-1.125 1.125m1.125 11.25v-1.5m0 0a1.125 1.125 0 00-1.125-1.125m1.125 1.125a1.125 1.125 0 011.125-1.125m-17.25-3.375h17.25m-17.25 0a1.125 1.125 0 00-1.125 1.125M20.625 16.125v-1.5m0 0a1.125 1.125 0 01-1.125-1.125m1.125 1.125a1.125 1.125 0 001.125-1.125M13.5 5.625v1.5m0 0a1.125 1.125 0 011.125 1.125m-1.125-1.125a1.125 1.125 0 00-1.125 1.125" /></svg></span>
+                        <input type="number" id="numSubSecciones" value="4" min="1" max="10" required placeholder=" ">
+                        <label for="numSubSecciones">Sub-Secciones/Sección</label>
+                    </div>
+                </div>
+                <button type="submit" id="submit-btn" class="button primary" style="width: 100%; margin-top: 1rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.5 21.75l-.398-1.178a3.375 3.375 0 00-2.923-2.923L12 17.25l1.178-.398a3.375 3.375 0 002.923-2.923L16.5 12.75l.398 1.178a3.375 3.375 0 002.923 2.923L21 17.25l-1.178.398a3.375 3.375 0 00-2.923 2.923z" /></svg>
+                    <span>Generar Índice</span>
+                </button>
+            </form>
+        </div>
+        <div class="panel editor-panel">
+            <div class="tabs"><div class="tab active" data-tab="indice">Índice</div><div class="tab" data-tab="contenido">Contenido</div></div>
+            <div class="tab-content active" id="tab-indice"><div id="editor-indice" class="editor-container" contenteditable="true"></div></div>
+            <div class="tab-content" id="tab-contenido">
+                <div class="generation-controls">
+                    <select id="capitulo-selector" class="button" disabled></select>
+                    <button id="btn-generar-capitulo" class="button primary" disabled>Escribir Capítulo</button>
+                    <button id="btn-generar-todo" class="button secondary" disabled>Escribir Libro Completo</button>
+                    <button id="btn-exportar-docs" class="button success" disabled>Exportar a Google Docs</button>
+                    <button id="btn-detener" class="button danger" style="display: none;">Detener</button>
+                </div>
+                <div id="editor-contenido" class="editor-container" contenteditable="true"></div>
+            </div>
+            <div class="status-bar">Listo</div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhGX0h-T4FYu2qagCJNw_lk5OojkHOEOd_zbJRjIxvUD1-CRSE2qnJvb3kXMLfls5l/exec";
+        let indiceData=[],isGenerating=!1;const form=document.getElementById("book-form"),submitBtn=document.getElementById("submit-btn"),statusBar=document.querySelector(".status-bar"),editorIndice=document.getElementById("editor-indice"),editorContenido=document.getElementById("editor-contenido"),capituloSelector=document.getElementById("capitulo-selector"),btnGenerarCapitulo=document.getElementById("btn-generar-capitulo"),btnGenerarTodo=document.getElementById("btn-generar-todo"),btnExportarDocs=document.getElementById("btn-exportar-docs"),btnDetener=document.getElementById("btn-detener");document.querySelector(".tabs").addEventListener("click",e=>{if(e.target.classList.contains("tab")){document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active")),document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active")),e.target.classList.add("active"),document.getElementById(`tab-${e.target.dataset.tab}`).classList.add("active")}}),btnGenerarCapitulo.addEventListener("click",()=>generarContenido(!1)),btnGenerarTodo.addEventListener("click",()=>generarContenido(!0)),btnDetener.addEventListener("click",()=>{isGenerating=!1}),btnExportarDocs.addEventListener("click",exportarADocs);async function callServer(a,e){if(WEB_APP_URL.includes("URL_DE_TU_WEB_APP_AQUI"))throw new Error("Configura la WEB_APP_URL.");const t=await fetch(WEB_APP_URL,{method:"POST",mode:"cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:a,data:e})});if(!t.ok)throw new Error(`Error de red: ${t.status}`);const n=await t.json();if("error"===n.status)throw new Error(n.message);return n.data}async function generarIndice(){if(!form.checkValidity()){Swal.fire("Campos Incompletos","Por favor, rellena todos los campos.","warning");return}setLoadingState(!0,"Generando estructura...");try{const a={titulo:document.getElementById("titulo").value,argumento:document.getElementById("argumento").value,numCapitulos:document.getElementById("numCapitulos").value,numSecciones:document.getElementById("numSecciones").value,tono:document.getElementById("tono").value},e=await callServer("generarIndiceLibro",a);onIndiceSuccess(a.titulo,e)}catch(a){onFailure(a)}}function onIndiceSuccess(a,e){editorIndice.innerHTML=`<h1>${a}</h1>${e}`,indiceData=parsearIndice(editorIndice.innerHTML),actualizarSelectorCapitulos(),setLoadingState(!1,"Índice generado."),Swal.fire("¡Éxito!","El índice está listo. Ve a 'Contenido' para escribir.","success")}async function generarContenido(a){isGenerating=!0,setContenidoLoadingState(!0,"Iniciando escritura...");const e=a?indiceData:[indiceData[parseInt(capituloSelector.value)]];if(a)editorContenido.innerHTML=`<h1>${document.getElementById("titulo").value}</h1>`;else if(!editorContenido.querySelector("h1"))editorContenido.innerHTML=`<h1>${document.getElementById("titulo").value}</h1>`;for(let t=0;t<e.length;t++){if(!isGenerating)break;const n=e[t],o=indiceData.findIndex(c=>c.title===n.title);editorContenido.innerHTML+=`<h2>${n.title}</h2>`;for(let r=0;r<n.sections.length;r++){if(!isGenerating)break;const l=n.sections[r];setContenidoLoadingState(!0,`Cap. ${o+1}: Escribiendo sección ${r+1}/${n.sections.length}...`);try{const d={tituloLibro:document.getElementById("titulo").value,tituloCapitulo:n.title,tituloSeccion:l,numeroSeccionCompleto:`${o+1}.${r+1}`,numSubSecciones:document.getElementById("numSubSecciones").value,tono:document.getElementById("tono").value};editorContenido.innerHTML+=await callServer("generarContenidoSeccion",d),editorContenido.scrollTop=editorContenido.scrollHeight}catch(u){return void onFailure(u)}}if(isGenerating){setContenidoLoadingState(!0,`Cap. ${o+1}: Escribiendo conclusión...`);try{editorContenido.innerHTML+=await callServer("generarConclusionCapitulo",{tituloCapitulo:n.title,listaSecciones:n.sections}),editorContenido.scrollTop=editorContenido.scrollHeight}catch(g){onFailure(g)}}}setContenidoLoadingState(!1,isGenerating?"Escritura completada.":"Escritura detenida."),isGenerating=!1}
+        async function exportarADocs(){const a=document.getElementById("titulo").value,e=editorContenido.innerHTML;if(!a||!e.trim())return void Swal.fire("Faltan Datos","Asegúrate de tener contenido generado.","warning");const t=`<style>body{font-family:'Lato',sans-serif;font-size:11pt;color:#212529}p,li{line-height:1.5;text-align:justify;margin-bottom:.8em;font-family:'Lato',sans-serif}h1,h2,h3,h4{font-family:'Lora',serif;font-weight:600;margin-top:2em;margin-bottom:1em;line-height:1.2;text-align:left}h1{font-size:24pt;text-align:center}h2{font-size:18pt;border-bottom:1px solid #DEE2E6;padding-bottom:4px}h3{font-size:14pt;color:#007BFF}h4{font-size:12pt;color:#343A40}ul,ol{padding-left:2em}b{font-weight:700}</style>`,n=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${a}</title>${t}</head><body>${e}</body></html>`;setLoadingState(!0,"Exportando con formato profesional...",!0);try{const o=await callServer("exportarGoogleDocs",{titulo:a,contenidoHTML:n});Swal.fire({title:"¡Éxito!",html:`Tu libro ha sido exportado.<br><br><a href="${o}" target="_blank" class="button primary">Abrir Documento</a>`,icon:"success"})}catch(a){onFailure(a)}finally{setLoadingState(!1,"Exportación finalizada.",!0)}}
+        function parsearIndice(a){const e=document.createElement("div");return e.innerHTML=a,Array.from(e.querySelectorAll("h2")).map(t=>({title:t.textContent.trim(),sections:Array.from(t.nextElementSibling?.querySelectorAll("li")??[]).map(n=>n.textContent.trim())}))}function actualizarSelectorCapitulos(){capituloSelector.innerHTML="";const a=indiceData.length>0;if(a)indiceData.forEach((e,t)=>{const n=e.title.replace(/^Capítulo\s*\d+:\s*/,""),o=new Option(`Cap. ${t+1}: ${n}`,t);capituloSelector.add(o)});capituloSelector.disabled=!a,btnGenerarCapitulo.disabled=!a,btnGenerarTodo.disabled=!a}function setLoadingState(a,e,t){t||(submitBtn.disabled=a,submitBtn.innerHTML=a?`<div class="spinner"></div><span>Generando...</span>`:"Generar Índice"),statusBar.innerHTML=a?`<div class="spinner"></div> ${e}`:e}function setContenidoLoadingState(a,e){const t=[btnGenerarCapitulo,btnGenerarTodo,capituloSelector,btnExportarDocs],n=[btnDetener];(a?t:n).forEach(o=>o.style.display="none"),(a?n:t).forEach(o=>o.style.display="inline-flex"),t.forEach(o=>o.disabled=a),a||(btnExportarDocs.disabled=0===editorContenido.innerHTML.trim().length),statusBar.innerHTML=a?`<div class="spinner"></div> ${e}`:e}function onFailure(a){isGenerating=!1,setLoadingState(!1,`Error: ${a.message}`),setContenidoLoadingState(false,`Error: ${a.message}`),Swal.fire({title:"Ocurrió un Error",text:a.message,icon:"error"})}
+    </script>
+</body>
+</html>
